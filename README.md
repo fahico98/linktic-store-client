@@ -32,16 +32,6 @@ docker compose up --build
 
 Al iniciar en perfil `dev`, la app puebla automáticamente la base de datos con usuarios, productos y compras de prueba.
 
-### Variable de entorno
-
-Antes de construir la imagen de producción, asegúrate de que `VITE_API_URL` apunte al backend correcto. Puedes crear un archivo `.env` en la raíz del proyecto:
-
-```sh
-VITE_API_URL=http://localhost:8080
-```
-
-> En producción, esta variable se puede inyectar como argumento de build: `docker build --build-arg VITE_API_URL=https://api.tu-dominio.com ...`
-
 ## Instalación local
 
 **Requisitos:** Node.js `^20.19.0` o `>=22.12.0`
