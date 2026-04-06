@@ -1,64 +1,172 @@
-# frontend
+# Linktic Store — Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+SPA de e-commerce construida con Vue 3 + TypeScript. Permite a los usuarios explorar un catálogo de productos, gestionar un carrito de compras y consultar su historial de pedidos.
 
-## Recommended IDE Setup
+---
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Instalación con Docker
 
-## Recommended Browser Setup
+El primer paso para levantar los contenedores docker que servirán toda la aplicación (backend, frontend y base de datos) es organizar el sistema de carpetas de todo el proyecto: Este repositorio debe ubicarse en la misma carpeta en la cual se aloja la aplicación backend (que puedes clonar desde el repositorio https://github.com/fahico98/linktic-store-api) para luego mover el archivo `docker-compose.yml` que está dentro del repositorio de la aplicación backend a la carpeta donde están los dos proyectos:
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+```bash
+directorio-del-proyecto/
+├── docker-compose.yml
+├── backend/   # repositorio del backend
+└── frontend/  # este repositorio (frontend)
 ```
 
-### Compile and Hot-Reload for Development
+Los nombres de los directorios `frontend` y `backend` son obligatorios, si se les ponen nombres diferentes deberán hacerse las correcciones pertinentes en
+el archivo `docker-compose.yml`.
+
+Desde la ruta de la carpeta `directorio-del-proyecto` se debe ejecutar el comando:
+
+```bash
+docker compose up --build
+```
+
+| Servicio   | URL                   |
+| ---------- | --------------------- |
+| Backend    | http://localhost:8080 |
+| Frontend   | http://localhost:5173 |
+| PostgreSQL | localhost:**5433**    |
+
+Al iniciar en perfil `dev`, la app puebla automáticamente la base de datos con usuarios, productos y compras de prueba.
+
+### Variable de entorno
+
+Antes de construir la imagen de producción, asegúrate de que `VITE_API_URL` apunte al backend correcto. Puedes crear un archivo `.env` en la raíz del proyecto:
 
 ```sh
+VITE_API_URL=http://localhost:8080
+```
+
+> En producción, esta variable se puede inyectar como argumento de build: `docker build --build-arg VITE_API_URL=https://api.tu-dominio.com ...`
+
+## Instalación local
+
+**Requisitos:** Node.js `^20.19.0` o `>=22.12.0`
+
+```sh
+# 1. Instalar dependencias
+npm install
+
+# 2. Configurar variables de entorno
+cp .env.example .env   # o crear .env manualmente
+# Editar VITE_API_URL con la URL del backend
+
+# 3. Iniciar servidor de desarrollo
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+La app estará disponible en `http://localhost:5173`.
+
+---
+
+## Scripts disponibles
 
 ```sh
-npm run build
+npm run dev          # Servidor de desarrollo con hot-reload (puerto 5173)
+npm run build        # Verificación de tipos + build de producción en dist/
+npm run preview      # Vista previa del build de producción (puerto 4173)
+npm run type-check   # Solo verificación de tipos con vue-tsc
+npm run format       # Formatear src/ con Prettier
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+---
 
-```sh
-npm run test:unit
+## Stack tecnológico
+
+| Tecnología   | Versión | Rol                                         |
+| ------------ | ------- | ------------------------------------------- |
+| Vue 3        | ^3.5    | Framework principal (Composition API)       |
+| TypeScript   | ~6.0    | Tipado estático                             |
+| Vite         | ^8.0    | Bundler y servidor de desarrollo            |
+| Vue Router   | ^5.0    | Enrutamiento SPA                            |
+| Pinia        | ^3.0    | Gestión de estado global                    |
+| Nuxt UI      | ^4.6    | Librería de componentes + Tailwind CSS      |
+| Tailwind CSS | ^4.2    | Estilos utilitarios                         |
+| Axios        | ^1.14   | Cliente HTTP                                |
+| vee-validate | ^4.15   | Validación de formularios                   |
+| @vueuse/core | —       | Utilidades reactivas (debounce, color mode) |
+| Vitest       | ^4.1    | Pruebas unitarias                           |
+| Cypress      | ^15.13  | Pruebas E2E                                 |
+
+---
+
+## Estructura del proyecto
+
+```
+src/
+├── main.ts               # Bootstrap: carga sesión y carrito desde localStorage
+├── App.vue               # Componente raíz
+├── router/index.ts       # Definición de rutas y guards de navegación
+├── stores/
+│   ├── auth.ts           # Estado de autenticación (token, usuario)
+│   └── cart.ts           # Estado del carrito de compras
+├── types/                # Interfaces TypeScript (User, Product, Purchase…)
+├── lib/
+│   ├── axios.ts          # Instancia de axios con interceptores
+│   └── sessions.ts       # Helpers de localStorage para token y carrito
+├── views/                # Páginas de la aplicación
+│   ├── HomeView.vue      # Landing page
+│   ├── ProductCatalog.vue
+│   ├── ShoppingCart.vue
+│   ├── UserPurchases.vue
+│   └── auth/             # Login, Registro, Editar perfil
+└── components/           # Componentes reutilizables
+    ├── ViewWrapper.vue   # Layout general (navbar + contenedor)
+    ├── GlobalNavbar.vue
+    ├── GlobalPaginator.vue
+    ├── products/CatalogSearch.vue
+    └── users/UserDataForm.vue
 ```
 
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+---
+
+## Rutas de la aplicación
+
+| Ruta               | Vista          | Acceso                            |
+| ------------------ | -------------- | --------------------------------- |
+| `/`                | HomeView       | Público (redirige si autenticado) |
+| `/login`           | LoginView      | Público (redirige si autenticado) |
+| `/register`        | RegisterView   | Público (redirige si autenticado) |
+| `/product-catalog` | ProductCatalog | Requiere autenticación            |
+| `/shopping-cart`   | ShoppingCart   | Requiere autenticación            |
+| `/user-purchases`  | UserPurchases  | Requiere autenticación            |
+| `/edit-user`       | EditUserView   | Requiere autenticación            |
+
+---
+
+## Pruebas
+
+### Unitarias (Vitest)
 
 ```sh
+npm run test:unit        # Modo watch
+npx vitest run           # Ejecución única
+npx vitest run src/path/to/file.spec.ts  # Archivo específico
+```
+
+### E2E (Cypress)
+
+```sh
+# Contra el servidor de desarrollo
 npm run test:e2e:dev
-```
 
-This runs the end-to-end tests against the Vite development server.
-It is much faster than the production build.
-
-But it's still recommended to test the production build with `test:e2e` before deploying (e.g. in CI environments):
-
-```sh
+# Contra el build de producción (recomendado para CI)
 npm run build
 npm run test:e2e
 ```
+
+> Las pruebas E2E requieren que el servidor esté en el puerto 4173.
+
+---
+
+## Configuración del editor
+
+**VS Code** con la extensión [Vue (Official / Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (desactivar Vetur si está instalado).
+
+Extensiones de navegador recomendadas:
+
+- [Vue.js devtools para Chrome](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+- [Vue.js devtools para Firefox](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
